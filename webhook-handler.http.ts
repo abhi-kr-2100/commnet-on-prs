@@ -11,8 +11,9 @@
  * 2. Configure webhook to send 'pull_request' events
  * 3. Ensure GITHUB_TOKEN environment variable is set
  * 
- * When a pull request is opened, this handler will automatically post
- * a comment to trigger multiple AI code review services.
+ * This handler triggers AI code reviews only when a new pull request is opened (action: "opened").
+ * It intentionally ignores all other actions including code updates, comments, description changes,
+ * label changes, etc. to avoid unnecessary API calls and comment spam.
  */
 
 // ============================================================================
@@ -543,8 +544,9 @@ export default async function(req: Request): Promise<Response> {
       throw validationError;
     }
 
-    // Define allowed actions to prevent cascading webhook triggers (prevent infinite loops)
-    const ALLOWED_ACTIONS = ['opened', 'synchronize'];
+    // Only trigger on 'opened' action to post review comments when a new PR is created
+    // This prevents triggering on code updates, comments, description changes, etc.
+    const ALLOWED_ACTIONS = ['opened'];
     
     // Only process if the action is in the allow-list
     if (!ALLOWED_ACTIONS.includes(payload.action)) {
